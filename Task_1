@@ -1,0 +1,41 @@
+import pandas as pd
+
+df = pd.read_csv('/content/news.csv')
+
+# Data exploration
+print("Dataset Info:")
+print(df.info())
+print("\nClass Distribution:")
+print(df['label'].value_counts())
+
+
+from sklearn.model_selection import train_test_split
+
+# Data preprocessing
+X = df['text']
+y = df['label']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import PassiveAggressiveClassifier
+
+tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
+tfidf_train = tfidf_vectorizer.fit_transform(X_train)
+tfidf_test = tfidf_vectorizer.transform(X_test)
+
+pac = PassiveAggressiveClassifier(max_iter=50)
+pac.fit(tfidf_train, y_train)
+
+
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+y_pred = pac.predict(tfidf_test)
+accuracy = accuracy_score(y_test, y_pred)
+confusion_mat = confusion_matrix(y_test, y_pred)
+
+print("\nModel Performance Report:")
+print(f'Accuracy: {accuracy*100:.2f}%')
+print(f'Confusion Matrix:\n{confusion_mat}')
+
